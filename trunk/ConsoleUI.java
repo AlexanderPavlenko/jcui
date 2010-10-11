@@ -19,6 +19,8 @@ package ru.alerticus.jcui;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.PropertyResourceBundle;
+import java.util.ResourceBundle;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,10 +29,10 @@ import java.util.logging.Logger;
  * The main class, contains the user input handling, menus switching and action rendering.
  */
 public class ConsoleUI implements Runnable {
-	private static String LOCAL_BACK;
-	private final SubMenu menu;
-	private final Scanner in = new Scanner(System.in);
 	private static final Logger logger = Logger.getLogger(ConsoleUI.class.getName());
+	private static final Scanner in = new Scanner(System.in);
+	private final SubMenu menu;
+	private ResourceBundle lang_res;
 	private String menu_prompt = ">> ";
 	private String param_prompt = " > ";
 
@@ -39,7 +41,21 @@ public class ConsoleUI implements Runnable {
 	 */
 	public ConsoleUI(SubMenu menu) {
 		this.menu = menu;
-		LOCAL_BACK = "Back";
+		try {
+			lang_res = new PropertyResourceBundle(ConsoleUI.class.getResourceAsStream("lang.properties"));
+		} catch (Exception ex) {
+			doLog(ex);
+		}
+	}
+
+	/**
+	 * @param menu Sets the menu which will be shown at first.
+	 * @param localization Sets another localization. See lang.properties file
+	 * for the list of strings.
+	 */
+	public ConsoleUI(SubMenu menu, ResourceBundle localization) {
+		this.menu = menu;
+		lang_res = localization;
 	}
 
 	/**
@@ -77,7 +93,7 @@ public class ConsoleUI implements Runnable {
 			obtainParams(curr);
 			curr.render();
 			if (curr.getBack() != null) {
-				System.out.println("0. " + LOCAL_BACK);
+				System.out.println("0. " + lang_res.getString("BACK_LABEL"));
 			}
 		}
 	}
@@ -122,7 +138,7 @@ public class ConsoleUI implements Runnable {
 	/**
 	 * Logging our buggy things =)
 	 */
-	private void doLog(Exception ex) {
+	private static void doLog(Exception ex) {
 		logger.log(Level.SEVERE, null, ex);
 	}
 
@@ -152,5 +168,19 @@ public class ConsoleUI implements Runnable {
 	 */
 	public void setParamPrompt(String value) {
 		param_prompt = value;
+	}
+
+	/**
+	 * @return Current localization for system strings.
+	 */
+	public ResourceBundle getLocalization() {
+		return lang_res;
+	}
+
+	/**
+	 * @param localization Localization for system strings to set.
+	 */
+	public void setLocalization(ResourceBundle localization) {
+		lang_res = localization;
 	}
 }
